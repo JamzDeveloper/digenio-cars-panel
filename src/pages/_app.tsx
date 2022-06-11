@@ -16,7 +16,7 @@ import { ProductsDataProvider } from "../context/productsContext";
 import { PropertiesDataProvider } from "../context/propertiesContext";
 
 const link = createUploadLink({
-  uri: `${process.env.NEXT_PUBLIC_URL}/graphql`,
+  uri: `https://cars-test-digenio.herokuapp.com/graphql`,
 });
 console.log(process.env.URL_API);
 const authLink = setContext((_, { headers }) => {
