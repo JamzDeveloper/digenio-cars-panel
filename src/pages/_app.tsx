@@ -14,13 +14,14 @@ import { UserDataProvider } from "../context/userData";
 import { UsersDataProvider } from "../context/usersData";
 import { ProductsDataProvider } from "../context/productsContext";
 import { PropertiesDataProvider } from "../context/propertiesContext";
-
+import {getCookieFromBrowser} from "../helpers/cookie";
 const link = createUploadLink({
   uri: `https://cars-test-digenio.herokuapp.com/graphql`,
 });
 console.log(process.env.URL_API);
 const authLink = setContext((_, { headers }) => {
-  const token = localStorage.getItem("Authorization");
+  // const token = localStorage.getItem("Authorization");
+  const token = getCookieFromBrowser("token");
 
   if (token) {
     return {

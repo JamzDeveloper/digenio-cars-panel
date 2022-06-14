@@ -13,8 +13,12 @@ import PropertiesTable from "../../../components/propertiesTable";
 import { NEWPROPERTY } from "../../../graphql/mutation/mutation.properties";
 import { Property } from "../../../models/PropertyType";
 import ModalProperty from "../../../components/modalProperty";
+import { UserDataContext } from "../../../context/userData";
+import { LOGIN } from "../../../graphql/query/query.login";
+import { getCookie, removeCookie, setCookie } from "../../../helpers/cookie";
+import { redirect } from "../../../helpers/function";
 
-const Properties = () => {
+const Properties = ({ token }: { token: string }) => {
   const [visibleModal, setVisibleModal] = useState(false);
   const router = useRouter();
   const [dataProperty, setDataProperty] = useState<Property[]>([]);
@@ -26,8 +30,28 @@ const Properties = () => {
   const [getProperties, { loading }] = useLazyQuery(ALLPROPERTIES);
   const [newProperty] = useMutation(NEWPROPERTY);
   const [nameNewProperty, setNameNewProperty] = useState("");
-
   const [errorNewProperty, setErrorNewProperty] = useState("");
+  const { updateDataUser } = useContext(UserDataContext);
+  const [getLogin] = useLazyQuery(LOGIN);
+
+  useEffect(() => {
+    if (token) {
+      getLogin({ variables: { username: "", password: "" } })
+        .then((response) => {
+          if (response.data) {
+            setCookie("token", response.data.login.token);
+            updateDataUser(response.data.login.user);
+          }
+        })
+        .catch((e) => {
+          removeCookie("token");
+          router.push("/login");
+        });
+    } else {
+      router.push("/login");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [getLogin, token]);
   useEffect(() => {
     const properties = async () => {
       const response = await getProperties();
@@ -111,4 +135,14 @@ const Properties = () => {
   );
 };
 
+export async function getServerSideProps(ctx: any) {
+  const jwt = getCookie("token", ctx.req);
+
+  if (!jwt) {
+    redirect({ location: "/login", ctx });
+  }
+  return {
+    props: { token: jwt },
+  };
+}
 export default Properties;

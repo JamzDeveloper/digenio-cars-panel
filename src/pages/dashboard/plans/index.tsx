@@ -1,11 +1,15 @@
-import { useRouter } from "next/router";
+import { useRouter, Router } from "next/router";
 import CardPlan from "../../../components/cardPlan";
 import LayoutDashboard from "../../../layout/Dashboard";
-import { ContainerPlans, ContainerActions, Container } from "../../../styles/style.plan";
+import {
+  ContainerPlans,
+  ContainerActions,
+  Container,
+} from "../../../styles/style.plan";
 import { ALLPLANS } from "../../../graphql/query/query.plan";
 import { useLazyQuery, useMutation } from "@apollo/client";
 
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Plan } from "../../../models/Plan";
 import { Button, Grid, Input } from "@nextui-org/react";
 import Add from "../../../assets/svg-components/add";
@@ -19,8 +23,12 @@ import {
 } from "../../../graphql/mutation/mutation.plan";
 import ModalPlan from "../../../components/modalPlan";
 import { FileType } from "../../../models/Types";
+import { getCookie, removeCookie, setCookie } from "../../../helpers/cookie";
+import { redirect } from "../../../helpers/function";
+import { UserDataContext } from "../../../context/userData";
+import { LOGIN } from "../../../graphql/query/query.login";
 
-const PlansPage = () => {
+const PlansPage = ({ token }: { token: string }) => {
   const router = useRouter();
   const routerActual = router.pathname.split("/")[2];
   const [visibleModal, setVisibleModal] = useState(false);
@@ -45,6 +53,27 @@ const PlansPage = () => {
   const [deletePlan] = useMutation(DELETEPLAN);
   const [togglePlan] = useMutation(TOGGLEPLAN);
   const [getPlans, { loading, error, data }] = useLazyQuery(ALLPLANS);
+  const { updateDataUser } = useContext(UserDataContext);
+  const [getLogin] = useLazyQuery(LOGIN);
+
+  useEffect(() => {
+    if (token) {
+      getLogin({ variables: { username: "", password: "" } })
+        .then((response) => {
+          if (response.data) {
+            setCookie("token", response.data.login.token);
+            updateDataUser(response.data.login.user);
+          }
+        })
+        .catch((e) => {
+          removeCookie("token");
+          router.push("/login");
+        });
+    }else{
+      router.push("/login");
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [getLogin, token]);
 
   useEffect(() => {
     getPlans().then((response: any) => {
@@ -150,7 +179,7 @@ const PlansPage = () => {
       };
 
       let resp: any;
-      if (imageProcessing?.file) {  
+      if (imageProcessing?.file) {
         resp = await updatePlan({
           variables: {
             updatePlanId: _id,
@@ -258,5 +287,16 @@ const PlansPage = () => {
     </>
   );
 };
+
+export async function getServerSideProps(ctx: any) {
+  const jwt = getCookie("token", ctx.req);
+
+  if (!jwt) {
+    redirect({ location: "/login", ctx });
+  }
+  return {
+    props: { token: jwt },
+  };
+}
 
 export default PlansPage;

@@ -5,7 +5,7 @@ import { useLazyQuery } from "@apollo/client";
 import { useRouter } from "next/router";
 import { Input, Grid, Button, Loading } from "@nextui-org/react";
 import { Inputs, LoginType } from "../../types/types.login";
-import { LOGIN } from "./query.graphql";
+import { LOGIN } from "../../graphql/query/query.login";
 import UserAvatar from "../../assets/svg-components/Avatar";
 import PadLock from "../../assets/svg-components/PadLock";
 import { RecoveryPassword } from "./style";
@@ -18,6 +18,7 @@ import {
   ErrorInput,
 } from "./style";
 import { UserDataContext } from "../../context/userData";
+import { setCookie } from "../../helpers/cookie";
 
 export const FormLogin = (): JSX.Element => {
   const id = useId();
@@ -38,7 +39,8 @@ export const FormLogin = (): JSX.Element => {
       getLogin({ variables: dataInput }).then((response) => {
         if (response.data) {
           router.push("/dashboard");
-          localStorage.setItem("Authorization", response.data.login.token);
+          // localStorage.setItem("Authorization", response.data.login.token);
+          setCookie("token",  response.data.login.token)
           updateDataUser(response.data.login.user);
         }
       });

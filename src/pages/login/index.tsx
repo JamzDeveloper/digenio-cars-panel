@@ -9,6 +9,7 @@ import { useLazyQuery } from "@apollo/client";
 import { Inputs, LoginType } from "../../types/types.login";
 import FormLogin from "../../components/formLogin";
 import { UserDataContext } from "../../context/userData";
+import { getCookieFromBrowser, setCookie } from "../../helpers/cookie";
 
 const Login = () => {
   const route = useRouter();
@@ -16,13 +17,12 @@ const Login = () => {
   const [getLogin] = useLazyQuery<LoginType, Inputs>(LOGIN);
   useEffect(() => {
     const login = async () => {
-      const token = localStorage.getItem("Authorization");
+      const token = getCookieFromBrowser("token");
       if (token) {
         getLogin({ variables: { username: "", password: "" } })
           .then((response) => {
             if (response.data) {
-              console.log(response.data);
-              localStorage.setItem("Authorization", response.data.login.token);
+              setCookie("token", response.data.login.token);
               updateDataUser(response.data.login.user);
               route.push("/dashboard");
             }

@@ -5,14 +5,40 @@ import UserTable from "../../../components/userTable";
 import DashboardLayout from "../../../layout/Dashboard";
 import { Container, ContainerActions } from "../../../styles/style.user";
 import SearchIcon from "../../../assets/svg-components/Search";
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import SelectFilter from "../../../components/selectFilter/index";
+import { getCookie, removeCookie, setCookie } from "../../../helpers/cookie";
+import { redirect } from "../../../helpers/function";
+import { UserDataContext } from "../../../context/userData";
+import { useLazyQuery } from "@apollo/client";
+import { LOGIN } from "../../../graphql/query/query.login";
 
-const Users = () => {
+const Users = ({ token }: { token: string }) => {
   const router = useRouter();
   const routerActual = router.pathname.split("/")[2];
   const [search, setSearch] = useState("");
   const [valueFilter, setValueFilter] = useState("ALL");
+  const { updateDataUser } = useContext(UserDataContext);
+  const [getLogin] = useLazyQuery(LOGIN);
+
+  useEffect(() => {
+    if (token) {
+      getLogin({ variables: { username: "", password: "" } })
+        .then((response) => {
+          if (response.data) {
+            setCookie("token", response.data.login.token);
+            updateDataUser(response.data.login.user);
+          }
+        })
+        .catch((e) => {
+          removeCookie("token");
+          router.push("/login");
+        });
+    } else {
+      router.push("/login");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [getLogin, token]);
   const onclickAdd = () => {
     router.push("/dashboard/users/new-user");
   };
@@ -52,5 +78,16 @@ const Users = () => {
     </DashboardLayout>
   );
 };
+
+export async function getServerSideProps(ctx: any) {
+  const jwt = getCookie("token", ctx.req);
+
+  if (!jwt) {
+    redirect({ location: "/login", ctx });
+  }
+  return {
+    props: { token: jwt },
+  };
+}
 
 export default Users;
