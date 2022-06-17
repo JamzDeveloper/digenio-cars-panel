@@ -18,7 +18,7 @@ const renderCell = (
           squared
           src={
             value.image
-              ? `http://localhost:4000/images/${value?.image}`
+              ? `${process.env.NEXT_PUBLIC_URL}/images/${value?.image}`
               : "/images/Imagenotavailable.png"
           }
           name={cellValue}
@@ -69,6 +69,7 @@ const renderCell = (
         </Row>
       );
     default:
+ 
       return cellValue;
   }
 };

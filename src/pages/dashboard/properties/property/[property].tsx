@@ -22,6 +22,7 @@ import { LOGIN } from "../../../../graphql/query/query.login";
 const Property = ({ token }: { token: string }) => {
   const [visibleModal, setVisibleModal] = useState(false);
   const [updateValues, setUpdateValues] = useState(false);
+  const [search,setSearch] = useState("");
   const route = useRouter();
   const propertyId = route.query.property;
 
@@ -89,6 +90,7 @@ const Property = ({ token }: { token: string }) => {
             width="400px"
             type="text"
             placeholder="Search"
+            onChange={(e)=>{setSearch(e.target.value)}}
             contentRight={
               <SearchIcon
                 style={{ overflow: "hidden", cursor: "pointer" }}
@@ -101,7 +103,7 @@ const Property = ({ token }: { token: string }) => {
         </Button>
       </ContainerActions>
       <Container>
-        <ValuePropertyTable updateValupePeroperty={updateValues} />
+        <ValuePropertyTable updateValupePeroperty={updateValues} searchValue={search}/>
       </Container>
 
       <ModalValueProperty

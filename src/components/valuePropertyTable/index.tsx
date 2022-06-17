@@ -22,12 +22,14 @@ const columns = [
 
 type Props = {
   updateValupePeroperty?: boolean;
+  searchValue?: string;
 };
-const ValuePropertyTable = ({ updateValupePeroperty }: Props) => {
+
+const ValuePropertyTable = ({ updateValupePeroperty, searchValue }: Props) => {
   const router = useRouter();
   const propertyId = router.query.property;
   const [postUpdateValue] = useMutation(UPDATEPROPERTYVALUE);
-  const [getProperty, { loading }] = useLazyQuery(ONEPROPERTY);
+  const [getProperty, { loading, data }] = useLazyQuery(ONEPROPERTY);
   const [visibleModal, setVisibleModal] = useState(false);
   const [deleteProperty] = useMutation(DELETEPROPERTYVALUE);
   const [values, setValues] = useState<Value[]>([] as Value[]);
@@ -54,8 +56,19 @@ const ValuePropertyTable = ({ updateValupePeroperty }: Props) => {
     updateValues,
   ]);
 
+  useEffect(() => {
+    if (searchValue && searchValue.length > 0) {
+      const dataFilter = data.property.value.filter((item: any) =>
+        item.name.toLowerCase().includes(searchValue.toLowerCase())
+      );
+      setValues(dataFilter);
+    }
+    if (data?.property.value && searchValue == "") {
+      setValues(data.property.value);
+    }
+  }, [data?.property.value, searchValue]);
+
   const onClickEdit = (id: string) => {
-    
     const oneValue = values.find((item: Value) => item._id === id);
 
     if (oneValue?.image) {
@@ -151,7 +164,7 @@ const ValuePropertyTable = ({ updateValupePeroperty }: Props) => {
       alert("Value updated");
       setUpdateValues(!updateValues);
     }
-    ////falta ocultar modal y limpiar el formulario 
+    ////falta ocultar modal y limpiar el formulario
   };
   return loading ? (
     <Loading />
@@ -187,6 +200,13 @@ const ValuePropertyTable = ({ updateValupePeroperty }: Props) => {
             </Table.Row>
           )}
         </Table.Body>
+        <Table.Pagination
+          shadow
+          noMargin
+          align="center"
+          rowsPerPage={10}
+          onPageChange={(page) => {}}
+        />
       </Table>
       <ModalValueProperty
         visibleModal={visibleModal}
