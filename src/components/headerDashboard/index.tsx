@@ -21,7 +21,7 @@ const HeaderDashboard = () => {
       
       <User
         style={{ cursor: "pointer" }}
-        src={`http://localhost:4000/images/${userData.photo}`}
+        src={`${process.env.NEXT_PUBLIC_URL}/images/${userData.photo}`}
         name={userData.name}
       >
         {userData.username}

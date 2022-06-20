@@ -16,9 +16,9 @@ import { ProductsDataProvider } from "../context/productsContext";
 import { PropertiesDataProvider } from "../context/propertiesContext";
 import {getCookieFromBrowser} from "../helpers/cookie";
 const link = createUploadLink({
-  uri: `https://cars-test-digenio.herokuapp.com/graphql`,
+  uri: `https://api.inmueblesenchiclayo.com/graphql`,
 });
-console.log(process.env.URL_API);
+
 const authLink = setContext((_, { headers }) => {
   // const token = localStorage.getItem("Authorization");
   const token = getCookieFromBrowser("token");
